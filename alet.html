@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Vrei sa fii partenera mea de V-Day?</title>
+  <style>
+    :root { --bg1:#ffdde1; --bg2:#ee9ca7; }
+    * { box-sizing: border-box; }
+    body{
+      margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at 20% 20%, #fff, transparent 35%),
+                  radial-gradient(circle at 80% 30%, #fff, transparent 35%),
+                  linear-gradient(135deg, var(--bg1), var(--bg2));
+      overflow:hidden;
+    }
+    .card{
+      width:min(560px, 92vw);
+      background: rgba(255,255,255,0.75);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.55);
+      border-radius: 22px;
+      padding: 26px 22px;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.12);
+      text-align:center;
+      position:relative;
+    }
+    h1{
+      margin: 6px 0 8px;
+      font-size: clamp(22px, 4vw, 34px);
+      letter-spacing: .2px;
+    }
+    p{ margin: 0 0 18px; opacity:.85; }
+    .btnRow{
+      display:flex;
+      gap: 14px;
+      justify-content:center;
+      align-items:center;
+      flex-wrap:wrap;
+      padding-top: 8px;
+    }
+    button{
+      border:0;
+      border-radius: 16px;
+      padding: 14px 18px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor:pointer;
+      transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+      box-shadow: 0 10px 24px rgba(0,0,0,.12);
+      user-select:none;
+    }
+    #yesBtn{
+      background: linear-gradient(135deg, #ff2d55, #ff6a88);
+      color: #fff;
+      transform: scale(1);
+      transform-origin: center;
+    }
+    #noBtn, #maybeBtn{
+      background: rgba(255,255,255,0.9);
+      color: #222;
+    }
+    button:hover{ filter: brightness(1.03); }
+    .hint{
+      margin-top: 14px;
+      font-size: 13px;
+      opacity: .7;
+    }
+    .hearts{
+      position:absolute; inset:0; pointer-events:none;
+      overflow:hidden;
+      border-radius: 22px;
+    }
+    .heart{
+      position:absolute;
+      font-size: 18px;
+      opacity:.9;
+      animation: floatUp 2.2s ease-in forwards;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.12));
+    }
+    @keyframes floatUp{
+      0%{ transform: translateY(0) scale(.9); opacity:.0; }
+      10%{ opacity:.9; }
+      100%{ transform: translateY(-180px) scale(1.25); opacity:0; }
+    }
+    .toast{
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.75);
+      color:#fff;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      opacity:0;
+      transition: opacity .18s ease;
+      pointer-events:none;
+    }
+    .toast.show{ opacity:1; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="hearts" id="hearts"></div>
+    <h1>Vrei sa fii partenera mea de V-Day? 💘</h1>
+    <p>Promit flori, ciocolata si o seara frumoasa. 😄</p>
+
+    <div class="btnRow">
+      <button id="yesBtn">DA! 💞</button>
+      <button id="noBtn">Nu 😅</button>
+      <button id="maybeBtn">Poate 🤔</button>
+    </div>
+
+    <div class="hint">Tip: apasa orice… si vezi ce se intampla 😈</div>
+  </div>
+
+  <div class="toast" id="toast">YAY! 💖</div>
+
+  <script>
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn = document.getElementById("noBtn");
+    const maybeBtn = document.getElementById("maybeBtn");
+    const hearts = document.getElementById("hearts");
+    const toast = document.getElementById("toast");
+
+    let scale = 1;
+
+    function popHearts(count = 10) {
+      const emojis = ["💖","💘","💗","💞","💕","❤️"];
+      const rect = yesBtn.getBoundingClientRect();
+
+      for (let i = 0; i < count; i++) {
+        const s = document.createElement("div");
+        s.className = "heart";
+        s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+
+        // spawn near the YES button center
+        const x = rect.left + rect.width / 2 + (Math.random() * 120 - 60);
+        const y = rect.top + rect.height / 2 + (Math.random() * 30 - 15);
+
+        // convert to card-relative-ish by using viewport coords -> fixed-like inside hearts
+        const cardRect = hearts.getBoundingClientRect();
+        s.style.left = (x - cardRect.left) + "px";
+        s.style.top  = (y - cardRect.top) + "px";
+        s.style.fontSize = (16 + Math.random() * 14) + "px";
+
+        hearts.appendChild(s);
+        setTimeout(() => s.remove(), 2300);
+      }
+    }
+
+    function growYes(mult = 1.35) {
+      scale *= mult; // grows fast
+      if (scale > 12) scale = 12; // cap so it doesn't break layout
+      yesBtn.style.transform = `scale(${scale})`;
+      yesBtn.style.boxShadow = `0 18px 50px rgba(255,45,85,.35)`;
+    }
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add("show");
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toast.classList.remove("show"), 900);
+    }
+
+    function anyClickGrow(e) {
+      // any button click grows YES a lot
+      growYes(1.45);
+      popHearts(12);
+      showToast("DA devine din ce in ce mai mare 😄");
+    }
+
+    // Any button (including YES) grows YES
+    [yesBtn, noBtn, maybeBtn].forEach(btn => btn.addEventListener("click", anyClickGrow));
+
+    // Extra: if they click NO or MAYBE, make it a little harder to refuse 😈
+    noBtn.addEventListener("mouseenter", () => { popHearts(6); });
+    maybeBtn.addEventListener("mouseenter", () => { popHearts(6); });
+
+    // If YES gets clicked a few times, celebrate
+    yesBtn.addEventListener("click", () => {
+      if (scale >= 4) showToast("Stiam eu! 💞");
+      if (scale >= 7) showToast("Oficial: V-Day date! 💘");
+    });
+  </script>
+</body>
+</html>
